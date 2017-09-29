@@ -1,11 +1,19 @@
 import React from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
-import { Button, Header, List, Container, Loader, Segment } from 'semantic-ui-react';
-import InfiniteScroll from 'react-infinite-scroller';
+import {
+  Button,
+  Header,
+  List,
+  Container,
+  Loader,
+  Segment,
+  Card }
+  from 'semantic-ui-react';
+import ReactPaginate from 'react-paginate';
 
 const styles = {
-  scroller: { height: '60vh', overflow: 'auto' }
+  scroller: { height: '60vh', overflowY: 'auto' }
 }
 
 class Beers extends React.Component {
@@ -20,11 +28,9 @@ class Beers extends React.Component {
       });
   }
 
-
-
   loadMore = () => {
     const page = this.state.page + 1;
-    axios.get(`/api/all_beers?page=${page}`)
+    axios.get(`/api/all_beers?page=20&per_page=5`)
       .then( ({ data, headers }) => {
         this.setState( state => {
           return { beers: [...state.beers, ...data.beers], page: state.page + 1 }
