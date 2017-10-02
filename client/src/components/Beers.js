@@ -4,72 +4,85 @@ import { connect } from 'react-redux';
 import {
   Button,
   Header,
-  List,
+  Menu,
+  Label,
   Container,
   Loader,
   Segment,
   Card }
   from 'semantic-ui-react';
-import ReactPaginate from 'react-paginate';
-
-const styles = {
-  scroller: { height: '60vh', overflowY: 'auto' }
-}
+import { getBeers } from '../actions/beers';
 
 class Beers extends React.Component {
-  state = { beers: [], page: 1, totalPages: 0 }
-
+  state = { page: 1 }
   componentDidMount() {
-    axios.get('/api/all_beers')
-      .then( res => {
-        let { data, headers } = res;
-        this.setState({ beers: data.beers, totalPages: data.total_pages })
-        this.props.dispatch({ type: 'HEADERS', headers })
-      });
+    this.props.dispatch(getBeers())
   }
 
-  loadMore = () => {
-    const page = this.state.page + 1;
-    axios.get(`/api/all_beers?page=20&per_page=5`)
-      .then( ({ data, headers }) => {
-        this.setState( state => {
-          return { beers: [...state.beers, ...data.beers], page: state.page + 1 }
-        })
-        this.props.dispatch({ type: 'HEADERS', headers })
-      });
+handleNextPageClick = () => {
+  let newPage = this.state.page + 1
+  this.setState({ page: newPage })
+  this.props.dispatch(getBeers(newPage))
   }
+
+  handlePrevPageClick = () => {
+    let prevPage = this.state.page - 1
+    if (prevPage < 1) {
+      return
+    }
+    this.setState({ page: prevPage })
+    this.props.dispatch(getBeers(prevPage))
+    }
 
   render() {
-    let { beers, page, totalPages } = this.state;
+    let { beers } = this.props
+
     return (
       <Container>
-        <Header as="h2">{'Da Beers'}</Header>
-
-        <List divided style={styles.scroller}>
-          <InfiniteScroll
-            pageStart={page}
-            loadMore={this.loadMore}
-            hasMore={page < totalPages}
-            loader={<Loader />}
-            useWindow={false}
-          >
-            { beers.map( beers =>
-                <List.Item key={beers.id}>
-                  <List.Content>
-                    <List.Header>{beers.name}</List.Header>
-                    <List.Description>{beers.description}</List.Description>
-                  </List.Content>
-                </List.Item>
-              )
-            }
-          </InfiniteScroll>
-        </List>
+        <Header styles={styles.Header} as="h2" block textAlign="center">{this.state.page}
+        <Button primary color='blue' floated='right' onClick={this.handleNextPageClick}>Next Page</Button>
+        <Button primary color='blue' floated='left' onClick={this.handlePrevPageClick}>Previous Page</Button>
+        </Header>
+        {/* <Label circular color="blue">{this.state.page}</Label> */}
+        <Menu >
+        <Card.Group fluid itemsPerRow={2} computer={4} mobile={16} tablet={16}>
+          {beers.map(beer => (
+            <Card key={beer.id}>
+              <Card.Content>
+                <Card.Header>{beer.name}</Card.Header>
+                <Card.Description style={styles.beerDescription}>
+                  {beer.description}
+                </Card.Description>
+              </Card.Content>
+            </Card>
+          ))}
+        </Card.Group>
+        </Menu>
       </Container>
     )
   }
 }
 
-export default connect()(Beers);
+const styles = {
+  beerDescription: {
+    height: '200px',
+    overflowY: 'scroll',
+  },
+  Header: {
+    marginTop: '50px',
+    backgroundColor: 'black',
+    color: 'blue',
+  }
+}
+
+let mapStateToProps = (state) => {
+  return {
+    beers: state.beers
+  }
+}
+
+export default connect(mapStateToProps)(Beers);
+
 
 
 

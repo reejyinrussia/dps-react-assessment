@@ -1,9 +1,9 @@
 const beers = (state = [], action) => {
   switch (action.type) {
-    case 'BEERS':
-      return action.beers;
-      default:
-        return state;
+    case 'STORE_BEERS':
+      return action.beers || [];
+    default:
+      return state;
     // case 'ADD_BEER':
     //  return [...state, action.beer]
     // case 'UPDATE_BEER':
